@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/jigmetnamgyal/gongphel-chain/issues"
   },
-  "homepage": "https://github.com/jigmetnamgyal/gongphel-chain#readme"
+  "homepage": "https://github.com/jigmetnamgyal/gongphel-chain#readme",
+  "dependencies": {
+    "hardhat": "^2.9.6"
+  }
 }
