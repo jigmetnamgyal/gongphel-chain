@@ -157,4 +157,12 @@ contract TenderContract {
         }
     }
 
+    function addTendererBuildStandardDetails(
+        bool _buildInspection,
+        uint _howFrequent
+    ) public liveTender(tenderStartTime, tenderEndTime) {
+        tenderers[msg.sender].buildStandard.buildInspection = _buildInspection;
+        tenderers[msg.sender].buildStandard.howFrequent = _howFrequent;
+    }
+
 }
