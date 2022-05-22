@@ -19,16 +19,12 @@ contract TenderContract {
     struct BuildCost {
         uint labourCost;
         uint plansAndEquipmentCost;
-        uint crewCost;
         uint materialsCost;
-        uint subContractorCost;
-        uint projectOverHeads;
-        uint commonPlansAndEquipmentCost;
-        uint commonWorkmenCost;
         uint profit;
-        uint contingency;
         uint generalOverheads;
-        uint allowanceForRisks;
+        uint directCost;
+        uint indirectCost;
+        uint markupAmount;
     }
 
     struct Safety {
@@ -80,9 +76,21 @@ contract TenderContract {
 
     event TenderSubmitted(Tenderer _tenderer);
 
+    // Modifiers
+
+    modifier validAddress(address _address) {
+        require(_address != address(0));
+        _;
+    }
+
+    modifier onlyAfter(uint _time) { require(block.timestamp > _time); _; }
+
+    modifier onlyBefore(uint _time) { require(block.timestamp < _time); _; }
+
+    modifier onlyOwner(address _owner) { require(superAdmin == _owner); _; }
+
     constructor() {
         superAdmin = msg.sender;
     }
-
 
 }
