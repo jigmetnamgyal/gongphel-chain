@@ -2,6 +2,7 @@
 pragma solidity ^0.8.10;
 
 contract TenderContract {
+    // Variables
     struct Experience {
         uint previouslyWonContract;
         string description;
@@ -68,6 +69,16 @@ contract TenderContract {
     bool public tenderEnded;
 
     mapping(address => Tenderer[]) public tenderers;
+
+    // Events
+
+    event WinnerInfo(address _address, string _email);
+
+    event TenderEnded(uint _endTime);
+
+    event TenderStarted(uint _startTime);
+
+    event TenderSubmitted(Tenderer _tenderer);
 
     constructor() {
         superAdmin = msg.sender;
