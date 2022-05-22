@@ -43,20 +43,21 @@ contract TenderContract {
         uint howFrequent;
     }
 
-    struct staffMangement {
+    struct StaffMangement {
         string teamDescription;
         bool properResourceManagement;
         string resourceManagementDescription;
         bool training;
     }
     
-    struct Winner {
+    struct Tenderer {
         string email;
+        bool systemGeneratedWinner;
         Experience experience; 
         BuildCost projectBuildCost;
         Safety safetyDetails;
         BuildStandard buildStandard;
-
+        StaffMangement staffManagement;
     }
 
     address public systemGeneratedWinner;
@@ -65,6 +66,8 @@ contract TenderContract {
     uint public tenderEndTime;
 
     bool public tenderEnded;
+
+    mapping(address => Tenderer[]) public tenderers;
 
     constructor() {
         superAdmin = msg.sender;
