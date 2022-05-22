@@ -107,11 +107,19 @@ contract TenderContract {
         return tenderers[systemGeneratedWinner];
     }
 
-    function addTenderer(
+    function addTendererExperience(
+        string memory _email,
         uint _previouslyWonContract,
         string memory _description,
-        uint _noOfProjectCompleted,
-        string memory _email,
+        uint _noOfProjectCompleted
+    ) public liveTender(tenderStartTime, tenderEndTime){
+        tenderers[msg.sender].email = _email;
+        tenderers[msg.sender].experience.previouslyWonContract = _previouslyWonContract;
+        tenderers[msg.sender].experience.description = _description;
+        tenderers[msg.sender].experience.noOfProjectCompleted = _noOfProjectCompleted;
+    }
+
+    function addTendererProjectBuildCostDetails(
         uint _labourCost,
         uint _plansAndEquipmentCost,
         uint _materialsCost,
@@ -119,19 +127,8 @@ contract TenderContract {
         uint _generalOverheads,
         uint _directCost,
         uint _indirectCost,
-        uint _markupAmount,
-        bool _useOfPPE,
-        bool _riskInsurance,
-        string memory _safetyDescription,
-        string memory _projectRiskDescription
-    ) public liveTender(tenderStartTime, tenderEndTime){
-        // Add experience of tenderer.
-        tenderers[msg.sender].email = _email;
-        tenderers[msg.sender].experience.previouslyWonContract = _previouslyWonContract;
-        tenderers[msg.sender].experience.description = _description;
-        tenderers[msg.sender].experience.noOfProjectCompleted = _noOfProjectCompleted;
-
-        //add projectBuildCost
+        uint _markupAmount
+    ) public liveTender(tenderStartTime, tenderEndTime) {
         tenderers[msg.sender].projectBuildCost.labourCost = _labourCost;
         tenderers[msg.sender].projectBuildCost.plansAndEquipmentCost = _plansAndEquipmentCost;
         tenderers[msg.sender].projectBuildCost.materialsCost = _materialsCost;
@@ -140,12 +137,24 @@ contract TenderContract {
         tenderers[msg.sender].projectBuildCost.directCost = _directCost;
         tenderers[msg.sender].projectBuildCost.indirectCost = _indirectCost;
         tenderers[msg.sender].projectBuildCost.markupAmount = _markupAmount;
+    }
 
+     function addTenderersafetyDetails(
+        bool _useOfPPE,
+        bool _riskInsurance,
+        string memory _safetyDescription,
+        string memory _projectRiskDescription,
+        SafetyPerson[] memory _safetyPersons
+    ) public liveTender(tenderStartTime, tenderEndTime) {
         //add safetyDetails
         tenderers[msg.sender].safetyDetails.useOfPPE = _useOfPPE;
         tenderers[msg.sender].safetyDetails.riskInsurance = _riskInsurance;
         tenderers[msg.sender].safetyDetails.description = _safetyDescription;
         tenderers[msg.sender].safetyDetails.projectRiskDescription = _projectRiskDescription;
+
+        for(uint i = 0; i < _safetyPersons.length; i++) {
+            tenderers[msg.sender].safetyDetails.safetyPersons[i] = _safetyPersons[i];
+        }
     }
 
 }
