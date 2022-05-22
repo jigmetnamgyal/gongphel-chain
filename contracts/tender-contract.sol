@@ -6,14 +6,13 @@ contract TenderContract {
     struct Experience {
         uint previouslyWonContract;
         string description;
-        uint noOfProjectComplected;
+        uint noOfProjectCompleted;
     }
 
     struct SafetyPerson {
         string name;
         uint yearOfExperience;
         string roleDescription;
-        string cidNumber;
     }
 
     struct BuildCost {
@@ -32,7 +31,7 @@ contract TenderContract {
         bool riskInsurance;
         string description;
         string projectRiskDescription;
-        SafetyPerson[] safetPersons;
+        SafetyPerson[] safetyPersons;
     }
 
     struct BuildStandard {
@@ -64,7 +63,7 @@ contract TenderContract {
 
     bool public tenderEnded;
 
-    mapping(address => Tenderer[]) public tenderers;
+    mapping(address => Tenderer) public tenderers;
 
     // Events
 
@@ -78,19 +77,75 @@ contract TenderContract {
 
     // Modifiers
 
-    modifier validAddress(address _address) {
-        require(_address != address(0));
-        _;
-    }
+    modifier validAddress(address _address) { require(_address != address(0)); _; }
 
     modifier onlyAfter(uint _time) { require(block.timestamp > _time); _; }
 
     modifier onlyBefore(uint _time) { require(block.timestamp < _time); _; }
 
+    modifier liveTender(uint _startTime, uint _endTime) { 
+        require(block.timestamp >= _startTime && block.timestamp <= _endTime);
+        _; 
+    }
+
     modifier onlyOwner(address _owner) { require(superAdmin == _owner); _; }
 
     constructor() {
         superAdmin = msg.sender;
+    }
+
+    function setTenderPeriod(uint _startTime, uint _endTime) public {
+        tenderStartTime = _startTime;
+        tenderEndTime = _endTime;
+    }
+
+    function manuallySetWinner(address _winner) public{
+        systemGeneratedWinner = _winner;
+    }
+
+    function getWinnerDetails() onlyAfter(tenderEndTime) public view returns (Tenderer memory) {
+        return tenderers[systemGeneratedWinner];
+    }
+
+    function addTenderer(
+        uint _previouslyWonContract,
+        string memory _description,
+        uint _noOfProjectCompleted,
+        string memory _email,
+        uint _labourCost,
+        uint _plansAndEquipmentCost,
+        uint _materialsCost,
+        uint _profit,
+        uint _generalOverheads,
+        uint _directCost,
+        uint _indirectCost,
+        uint _markupAmount,
+        bool _useOfPPE,
+        bool _riskInsurance,
+        string memory _safetyDescription,
+        string memory _projectRiskDescription
+    ) public liveTender(tenderStartTime, tenderEndTime){
+        // Add experience of tenderer.
+        tenderers[msg.sender].email = _email;
+        tenderers[msg.sender].experience.previouslyWonContract = _previouslyWonContract;
+        tenderers[msg.sender].experience.description = _description;
+        tenderers[msg.sender].experience.noOfProjectCompleted = _noOfProjectCompleted;
+
+        //add projectBuildCost
+        tenderers[msg.sender].projectBuildCost.labourCost = _labourCost;
+        tenderers[msg.sender].projectBuildCost.plansAndEquipmentCost = _plansAndEquipmentCost;
+        tenderers[msg.sender].projectBuildCost.materialsCost = _materialsCost;
+        tenderers[msg.sender].projectBuildCost.profit = _profit;
+        tenderers[msg.sender].projectBuildCost.generalOverheads = _generalOverheads;
+        tenderers[msg.sender].projectBuildCost.directCost = _directCost;
+        tenderers[msg.sender].projectBuildCost.indirectCost = _indirectCost;
+        tenderers[msg.sender].projectBuildCost.markupAmount = _markupAmount;
+
+        //add safetyDetails
+        tenderers[msg.sender].safetyDetails.useOfPPE = _useOfPPE;
+        tenderers[msg.sender].safetyDetails.riskInsurance = _riskInsurance;
+        tenderers[msg.sender].safetyDetails.description = _safetyDescription;
+        tenderers[msg.sender].safetyDetails.projectRiskDescription = _projectRiskDescription;
     }
 
 }
