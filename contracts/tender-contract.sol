@@ -165,4 +165,16 @@ contract TenderContract {
         tenderers[msg.sender].buildStandard.howFrequent = _howFrequent;
     }
 
+    function addTendererStaffManagementDetails(
+        string memory _teamDescription,
+        bool _properResourceManagement,
+        string memory _resourceManagementDescription,
+        bool _training
+    ) public liveTender(tenderStartTime, tenderEndTime) {
+        tenderers[msg.sender].staffManagement.teamDescription = _teamDescription;
+        tenderers[msg.sender].staffManagement.properResourceManagement = _properResourceManagement;
+        tenderers[msg.sender].staffManagement.resourceManagementDescription = _resourceManagementDescription;
+        tenderers[msg.sender].staffManagement.training = _training;
+    }
+
 }
