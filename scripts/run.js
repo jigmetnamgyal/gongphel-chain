@@ -2,6 +2,8 @@ const main = async () => {
     const tenderContractFactory = await hre.ethers.getContractFactory('TenderContract');
     const tenderContract = await tenderContractFactory.deploy();
     await tenderContract.deployed();
+
+    console.log("The tender contract is deployed to: ", tenderContract.address)
     // let start = await tenderContract.setTenderPeriod('10000');
     // await start.wait();
 

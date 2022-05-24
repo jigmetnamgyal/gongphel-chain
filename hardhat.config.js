@@ -1,5 +1,5 @@
-import * as dotenv from 'dotenv';
-import '@nomiclabs/hardhat-waffle';
+require('dotenv').config()
+require('@nomiclabs/hardhat-waffle');
 
 module.exports = {
   solidity: "0.8.0",
