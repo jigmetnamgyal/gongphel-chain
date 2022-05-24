@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.0;
+
+import "hardhat/console.sol";
 
 contract TenderContract {
     // Variables
@@ -9,41 +11,22 @@ contract TenderContract {
         uint noOfProjectCompleted;
     }
 
-    struct SafetyPerson {
-        string name;
-        uint yearOfExperience;
-        string roleDescription;
-    }
-
     struct BuildCost {
-        uint labourCost;
-        uint plansAndEquipmentCost;
-        uint materialsCost;
-        uint profit;
-        uint generalOverheads;
-        uint directCost;
-        uint indirectCost;
-        uint markupAmount;
-    }
-
-    struct Safety {
-        bool useOfPPE;
-        bool riskInsurance;
-        string description;
-        string projectRiskDescription;
-        SafetyPerson[] safetyPersons;
-    }
-
-    struct BuildStandard {
-        bool buildInspection;
-        uint howFrequent;
+        string labourCost;
+        string plansAndEquipmentCost;
+        string materialsCost;
+        string allowanceForRisk;
+        string generalOverheads;
+        string directCost;
+        string indirectCost;
+        string markupAmount;
     }
 
     struct StaffMangement {
         string teamDescription;
-        bool properResourceManagement;
-        string resourceManagementDescription;
-        bool training;
+        uint teamSize;
+        bool buildInspection;
+        string frequenceyOfMaintenance;
     }
     
     struct Tenderer {
@@ -51,20 +34,15 @@ contract TenderContract {
         bool systemGeneratedWinner;
         Experience experience; 
         BuildCost projectBuildCost;
-        Safety safetyDetails;
-        BuildStandard buildStandard;
         StaffMangement staffManagement;
     }
-
+    
     address public systemGeneratedWinner;
     address public superAdmin;
     uint public tenderStartTime;
     uint public tenderEndTime;
 
-    bool public tenderEnded;
-
     mapping(address => Tenderer) public tenderers;
-
     // Events
 
     event WinnerInfo(address _address, string _email);
@@ -77,29 +55,41 @@ contract TenderContract {
 
     // Modifiers
 
-    modifier validAddress(address _address) { require(_address != address(0)); _; }
-
-    modifier onlyAfter(uint _time) { require(block.timestamp > _time); _; }
-
-    modifier onlyBefore(uint _time) { require(block.timestamp < _time); _; }
-
-    modifier liveTender(uint _startTime, uint _endTime) { 
-        require(block.timestamp >= _startTime && block.timestamp <= _endTime);
+    modifier validAddress(address _address) { 
+        require(_address != address(0), "The address is not valid"); 
         _; 
     }
 
-    modifier onlyOwner(address _owner) { require(superAdmin == _owner); _; }
+    modifier onlyAfter(uint _time) { 
+        require(block.timestamp > _time, 'should be only after tender is ended');
+        _; 
+    }
+
+    modifier onlyBefore(uint _time) { 
+        require(block.timestamp < _time, 'should be only before tender started'); 
+        _; 
+    }
+
+    modifier liveTender(uint _startTime, uint _endTime) { 
+        require(block.timestamp >= _startTime && block.timestamp <= _endTime, 'Tender submission has ended/not started');
+        _; 
+    }
+
+    modifier onlyOwner(address _owner) { 
+        require(superAdmin == _owner, "Needs to be the owner of the contract");
+        _; 
+    }
 
     constructor() {
         superAdmin = msg.sender;
     }
 
-    function setTenderPeriod(uint _startTime, uint _endTime) public {
-        tenderStartTime = _startTime;
-        tenderEndTime = _endTime;
+    function setTenderPeriod(uint _endTime) public {
+        tenderStartTime = block.timestamp;
+        tenderEndTime = tenderStartTime +  _endTime;
     }
 
-    function manuallySetWinner(address _winner) public{
+    function manuallySetWinner(address _winner) onlyAfter(tenderEndTime) public{
         systemGeneratedWinner = _winner;
     }
 
@@ -120,61 +110,39 @@ contract TenderContract {
     }
 
     function addTendererProjectBuildCostDetails(
-        uint _labourCost,
-        uint _plansAndEquipmentCost,
-        uint _materialsCost,
-        uint _profit,
-        uint _generalOverheads,
-        uint _directCost,
-        uint _indirectCost,
-        uint _markupAmount
-    ) public liveTender(tenderStartTime, tenderEndTime) {
+        string memory _labourCost,
+        string memory _plansAndEquipmentCost,
+        string memory _materialsCost,
+        string memory _generalOverheads,
+        string memory _directCost,
+        string memory _indirectCost,
+        string memory _markupAmount,
+        string memory _allowanceForRisk
+    ) public liveTender(tenderStartTime, tenderEndTime){
         tenderers[msg.sender].projectBuildCost.labourCost = _labourCost;
         tenderers[msg.sender].projectBuildCost.plansAndEquipmentCost = _plansAndEquipmentCost;
         tenderers[msg.sender].projectBuildCost.materialsCost = _materialsCost;
-        tenderers[msg.sender].projectBuildCost.profit = _profit;
         tenderers[msg.sender].projectBuildCost.generalOverheads = _generalOverheads;
         tenderers[msg.sender].projectBuildCost.directCost = _directCost;
         tenderers[msg.sender].projectBuildCost.indirectCost = _indirectCost;
         tenderers[msg.sender].projectBuildCost.markupAmount = _markupAmount;
+        tenderers[msg.sender].projectBuildCost.allowanceForRisk = _allowanceForRisk;
     }
 
-     function addTenderersafetyDetails(
-        bool _useOfPPE,
-        bool _riskInsurance,
-        string memory _safetyDescription,
-        string memory _projectRiskDescription,
-        SafetyPerson[] memory _safetyPersons
-    ) public liveTender(tenderStartTime, tenderEndTime) {
-        //add safetyDetails
-        tenderers[msg.sender].safetyDetails.useOfPPE = _useOfPPE;
-        tenderers[msg.sender].safetyDetails.riskInsurance = _riskInsurance;
-        tenderers[msg.sender].safetyDetails.description = _safetyDescription;
-        tenderers[msg.sender].safetyDetails.projectRiskDescription = _projectRiskDescription;
-
-        for(uint i = 0; i < _safetyPersons.length; i++) {
-            tenderers[msg.sender].safetyDetails.safetyPersons[i] = _safetyPersons[i];
-        }
-    }
-
-    function addTendererBuildStandardDetails(
-        bool _buildInspection,
-        uint _howFrequent
-    ) public liveTender(tenderStartTime, tenderEndTime) {
-        tenderers[msg.sender].buildStandard.buildInspection = _buildInspection;
-        tenderers[msg.sender].buildStandard.howFrequent = _howFrequent;
-    }
 
     function addTendererStaffManagementDetails(
         string memory _teamDescription,
-        bool _properResourceManagement,
-        string memory _resourceManagementDescription,
-        bool _training
+        uint _teamSize,
+        bool _buildInspection,
+        string memory _frequenceyOfMaintenance
     ) public liveTender(tenderStartTime, tenderEndTime) {
         tenderers[msg.sender].staffManagement.teamDescription = _teamDescription;
-        tenderers[msg.sender].staffManagement.properResourceManagement = _properResourceManagement;
-        tenderers[msg.sender].staffManagement.resourceManagementDescription = _resourceManagementDescription;
-        tenderers[msg.sender].staffManagement.training = _training;
+        tenderers[msg.sender].staffManagement.teamSize = _teamSize;
+        tenderers[msg.sender].staffManagement.buildInspection = _buildInspection;
+        tenderers[msg.sender].staffManagement.frequenceyOfMaintenance = _frequenceyOfMaintenance;
     }
 
+    function get() public view returns (StaffMangement memory) {
+        return tenderers[msg.sender].staffManagement;
+    }
 }
